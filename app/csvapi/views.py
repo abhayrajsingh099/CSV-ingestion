@@ -12,7 +12,7 @@ from io import StringIO
 
 from product.models import Product
 
-from .utils import validate_csv_header_with_fields
+from .utils import validate_csv_header_with_fields, validate_row
 
 
 @api_view(['POST'])
@@ -35,11 +35,30 @@ def upload_csv_file(request):
     model_fields = [field.name for field in Product._meta.fields if not field.name=='id']
     #using csv module
     csv_reader = csv.reader(string_io)
-    csv_header = next(csv_reader, None)
+    csv_header = next(csv_reader, None) #header of csv
 
     # match fields required model_fields==csv_fields.
     flag = validate_csv_header_with_fields(model_fields, csv_header)
     if type(flag)==list:
         return Response({'errors':flag}, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response({'message':'csv file uploaded', 'csv_status':'accepted'},status=status.HTTP_200_OK)
+    #iterate rows
+    row_number = 2
+    row_errors = {"Errors":"Row Level Errors"}
+    valid_rows_count = 0
+
+    for row in csv_reader:
+        validated = validate_row(row, csv_header)
+        if type(validated)==list:
+            row_errors[str(row_number)] = validated
+        else:
+            valid_rows_count += 1
+
+        row_number += 1
+
+    if len(row_errors) > 1:
+        return Response({'row_erros':row_errors, 'Rows Accepted':str(valid_rows_count)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    context = {'message':'csv file uploaded', 'csv_status':'accepted', 'Rows Accepted':str(valid_rows_count)}
+    return Response(context ,status=status.HTTP_200_OK)

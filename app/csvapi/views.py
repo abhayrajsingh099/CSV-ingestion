@@ -3,7 +3,6 @@ Csv api logic to accept csv from client-side.
 """
 
 from rest_framework import status
-from rest_framework.parsers import FileUploadParser
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -17,7 +16,6 @@ from .utils import validate_csv_header_with_fields, validate_row
 
 @api_view(['POST'])
 def upload_csv_file(request):
-    # parser_classes = [FileUploadParser]
 
     csv_file = request.FILES.get('file')
 
@@ -44,21 +42,30 @@ def upload_csv_file(request):
 
     #iterate rows
     row_number = 2
-    row_errors = {"Errors":"Row Level Errors"}
+    row_errors = {}
     valid_rows_count = 0
 
     for row in csv_reader:
         validated = validate_row(row, csv_header)
         if type(validated)==list:
-            row_errors[str(row_number)] = validated
-        else:
-            valid_rows_count += 1
+            row_errors['Row:'+str(row_number)] = validated
+        else: # if no errors row is safe save row into DB
+            try:
+                Product.objects.create(**validated)
+                valid_rows_count += 1
+            except Exception as e:
+                row_errors['Row:'+str(row_number)] = f'Unexpected Error during Save. {e}'
 
         row_number += 1
 
-    if len(row_errors) > 1:
-        return Response({'row_erros':row_errors, 'Rows Accepted':str(valid_rows_count)}, status=status.HTTP_400_BAD_REQUEST)
+    if len(row_errors) > 0:
+        context = {'Total rows':str(row_number-2),
+                   'Rows Accepted':str(valid_rows_count),
+                   'Rows Rejected':str(row_number-valid_rows_count-2),
+                   'row_erros':row_errors
+                   }
+        return Response(context, status=status.HTTP_207_MULTI_STATUS)
 
 
-    context = {'message':'csv file uploaded', 'csv_status':'accepted', 'Rows Accepted':str(valid_rows_count)}
+    context = {'csv_status':'accepted', 'Rows Accepted':str(valid_rows_count)}
     return Response(context ,status=status.HTTP_200_OK)

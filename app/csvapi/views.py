@@ -11,7 +11,8 @@ from io import StringIO
 
 from product.models import Product
 
-from .utils import validate_csv_header_with_fields, validate_row
+from .utils import (validate_csv_header_with_fields,
+                    validate_row, save_row_in_db)
 
 
 @api_view(['POST'])
@@ -25,44 +26,46 @@ def upload_csv_file(request):
     if not csv_file.name.endswith('.csv'): #python method
         return Response({'errors':'File is not CSV type.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # make csv content available in buffer
+    # make csv content available in buffer (in-memory usage of csv)
     content = csv_file.read().decode('utf-8')
     string_io = StringIO(content)
-
     #models fields
     model_fields = [field.name for field in Product._meta.fields if not field.name=='id']
     #using csv module
     csv_reader = csv.reader(string_io)
-    csv_header = next(csv_reader, None) #header of csv
+    csv_header = next(csv_reader, None) 
 
-    # match fields required model_fields==csv_fields.
-    flag = validate_csv_header_with_fields(model_fields, csv_header)
-    if type(flag)==list:
-        return Response({'errors':flag}, status=status.HTTP_400_BAD_REQUEST)
+    # header validation
+    header_info = validate_csv_header_with_fields(model_fields, csv_header)
+    if not header_info['valid']:
+        return Response({'errors':header_info['errors']}, status=status.HTTP_400_BAD_REQUEST)
 
-    #iterate rows
+    #Row validation and saving data into db
     row_number = 2
     row_errors = {}
     valid_rows_count = 0
 
     for row in csv_reader:
-        validated = validate_row(row, csv_header)
-        if type(validated)==list:
-            row_errors['Row:'+str(row_number)] = validated
-        else: # if no errors row is safe save row into DB
-            try:
-                Product.objects.create(**validated)
+        row_info = validate_row(row, csv_header)
+
+        if row_info['validated_data_for_db']:
+            save_info = save_row_in_db(row_info['validated_data_for_db'])
+            if save_info['save_count'] == 1:
                 valid_rows_count += 1
-            except Exception as e:
-                row_errors['Row:'+str(row_number)] = f'Unexpected Error during Save. {e}'
+            else:
+                row_errors['Row:'+str(row_number)] = save_info['errors']
+        else:
+            row_errors['Row:'+str(row_number)] = row_info['errors']
 
         row_number += 1
 
+
+    #return valid response
     if len(row_errors) > 0:
         context = {'Total rows':str(row_number-2),
                    'Rows Accepted':str(valid_rows_count),
                    'Rows Rejected':str(row_number-valid_rows_count-2),
-                   'row_erros':row_errors
+                   'row_errors':row_errors
                    }
         return Response(context, status=status.HTTP_207_MULTI_STATUS)
 

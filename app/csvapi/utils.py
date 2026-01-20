@@ -1,12 +1,16 @@
 from product.models import Product
 
 
-def validate_csv_header_with_fields(model_fields, csv_header):
+def validate_csv_header_with_fields(model_fields, csv_header) -> dict:
+    info = {'valid': False, 'errors':[]}
+
     if len(model_fields) != len(csv_header):
         if len(model_fields) > len(csv_header):
-            return ["Missing csv fields/header."]
+            info['errors'] = ["Missing csv fields / header."]
         else:
-            return ["Extra fields/header are provided then required."]
+            info['errors'] = ["Extra fields / header are provided then required. Please Remove the extra fields."]
+
+        return info
 
     match = set(model_fields)
     count = 0
@@ -21,58 +25,75 @@ def validate_csv_header_with_fields(model_fields, csv_header):
 
 
     if count == len(model_fields):
-        return True
+        info['valid'] = True
     else:
-        errors.append(f"missing fields:{match}")
+        info['errors'] = [f"missing fields:{match}"]
 
-    return errors
+    return info
 
 
-
-def is_positive_number(value_str):
+def is_positive_number(value_str) -> bool:
     try:
         num = float(value_str)
         return num >= 0
     except (ValueError, TypeError):
         return False  # Not a valid number, so not positive
 
-def validate_row(row, csv_header):
+def validate_row(row, csv_header) -> dict:
+
+    info = {'validated_data_for_db':{} ,'errors':[]}
+
     if len(row)!=len(csv_header):
-        return ['Missing a required field']
+        info['errors'] = ['Missing a required field']
+        return info
+    
     char_fields = set([field.name for field in Product._meta.fields if field.get_internal_type() == 'CharField'])
     int_fields = set([field.name for field in Product._meta.fields if field.get_internal_type() == 'IntegerField'])
 
     column_errors = []
-    row_data_for_db = {}
+    valid_row_data = {}
     col_number = 1
-    csv_index = 0 # index to access item in csv_header
+    header_index = 0 # index to access item in csv_header
 
     for col_data in row:
-        current_header = csv_header[csv_index]
+        current_header = csv_header[header_index]
 
         if current_header in char_fields:
             if not col_data.strip() or is_positive_number(col_data) or len(col_data)>255:
-                column_errors.append(f"Column:{col_number}:'{csv_header[csv_index]}': Empty Column or an invalid {current_header}")
-            else: #add to db data for use
-                row_data_for_db[current_header] = col_data
+                column_errors.append(f"Column:{col_number}:'{current_header}': Empty Column or an invalid {current_header}")
+            else:
+                valid_row_data[current_header] = col_data
 
         elif current_header in int_fields:
             if not is_positive_number(col_data):
                 column_errors.append(f"Column:{col_number}:'{current_header}' Negative or Invalid Values not accepted.")
-            else: #add to db data for use
-                row_data_for_db[current_header] = int(col_data)
+            else:
+                valid_row_data[current_header] = int(col_data)
 
         else: # csv_header[csv_index] is description textfield
-            row_data_for_db[current_header] = col_data
+            valid_row_data[current_header] = col_data
 
         col_number += 1
-        csv_index += 1
+        header_index += 1
 
-    #errors inside the row return not save
     if len(column_errors) > 0:
-        return column_errors
+        info['errors'] = column_errors
+    else:
+        info['validated_data_for_db'] = valid_row_data
 
-    return row_data_for_db
+    return info
+
+
+def save_row_in_db(data=dict) -> dict:
+    info = {'save_count':0, 'errors':''}
+
+    try:
+        # Product.objects.create(**data)
+        info['save_count'] = 1
+    except Exception as e:
+        info['errors'] = f'Unexpected Error during Save. {e}'
+
+    return info
 
 
 

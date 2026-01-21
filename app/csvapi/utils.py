@@ -1,3 +1,4 @@
+from django.db import transaction
 from product.models import Product
 
 
@@ -46,7 +47,7 @@ def validate_row(row, csv_header) -> dict:
     if len(row)!=len(csv_header):
         info['errors'] = ['Missing a required field']
         return info
-    
+
     char_fields = set([field.name for field in Product._meta.fields if field.get_internal_type() == 'CharField'])
     int_fields = set([field.name for field in Product._meta.fields if field.get_internal_type() == 'IntegerField'])
 
@@ -84,16 +85,17 @@ def validate_row(row, csv_header) -> dict:
     return info
 
 
-def save_row_in_db(data=dict) -> dict:
-    info = {'save_count':0, 'errors':''}
+def save_valid_rows_in_db(valid_data=dict) -> bool:
+    # invalid = {'ame':'abhay', 'list': False}
 
     try:
-        # Product.objects.create(**data)
-        info['save_count'] = 1
+        with transaction.atomic():
+            for data in valid_data:
+                Product.objects.create(**data)
+            # Product.objects.create(**invalid)
+        return True
     except Exception as e:
-        info['errors'] = f'Unexpected Error during Save. {e}'
-
-    return info
+        return False
 
 
 

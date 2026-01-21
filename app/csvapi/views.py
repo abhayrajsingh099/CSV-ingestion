@@ -12,7 +12,7 @@ from io import StringIO
 from product.models import Product
 
 from .utils import (validate_csv_header_with_fields,
-                    validate_row, save_row_in_db)
+                    validate_row, save_valid_rows_in_db)
 
 
 @api_view(['POST'])
@@ -33,7 +33,7 @@ def upload_csv_file(request):
     model_fields = [field.name for field in Product._meta.fields if not field.name=='id']
     #using csv module
     csv_reader = csv.reader(string_io)
-    csv_header = next(csv_reader, None) 
+    csv_header = next(csv_reader, None)
 
     # header validation
     header_info = validate_csv_header_with_fields(model_fields, csv_header)
@@ -43,21 +43,25 @@ def upload_csv_file(request):
     #Row validation and saving data into db
     row_number = 2
     row_errors = {}
+    valid_rows_data = []
     valid_rows_count = 0
 
     for row in csv_reader:
         row_info = validate_row(row, csv_header)
 
         if row_info['validated_data_for_db']:
-            save_info = save_row_in_db(row_info['validated_data_for_db'])
-            if save_info['save_count'] == 1:
-                valid_rows_count += 1
-            else:
-                row_errors['Row:'+str(row_number)] = save_info['errors']
+            valid_rows_data.append(row_info['validated_data_for_db'])
+            valid_rows_count += 1
         else:
             row_errors['Row:'+str(row_number)] = row_info['errors']
 
         row_number += 1
+
+
+    #send valid data/rows to transicational.atomic function
+    db_status = save_valid_rows_in_db(valid_rows_data)
+    if not db_status:
+        return Response({'errors':'Unexcpeted Error during save. Try again.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
     #return valid response

@@ -1,5 +1,29 @@
+import time
+
+from django.core.files.storage import default_storage
+
+
 from django.db import transaction
 from product.models import Product
+
+
+
+def validate_csv_file(csv_file) -> dict:
+    info = {'file_path':'', 'errors':''}
+
+    if not csv_file:
+        info['errors'] = 'CSV file not Provided.'
+        return info
+    if not csv_file.name.endswith('.csv'):
+        info['errors'] = 'File is not CSV type.'
+        return info
+
+    filename = csv_file.name
+    file_path = f'{time.strftime("%Y-%m-%d")}/{filename}'
+    relative_path = default_storage.save(f'csv_files/{file_path}', csv_file)
+    absolute_path = default_storage.path(relative_path)
+    info['file_path'] = absolute_path
+    return info
 
 
 def validate_csv_header_with_fields(model_fields, csv_header) -> dict:
@@ -86,20 +110,10 @@ def validate_row(row, csv_header) -> dict:
 
 
 def save_valid_rows_in_db(valid_data=dict) -> bool:
-    # invalid = {'ame':'abhay', 'list': False}
-
     try:
         with transaction.atomic():
             for data in valid_data:
                 Product.objects.create(**data)
-            # Product.objects.create(**invalid)
-        return True
     except Exception as e:
         return False
-
-
-
-
-
-
-
+    return True

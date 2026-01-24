@@ -117,8 +117,7 @@ def save_valid_rows_in_db(valid_data=dict) -> dict:
         with transaction.atomic():
             for data in valid_data:
                 if Product.objects.filter(external_product_id=data['external_product_id']).exists():
-                    info['skipped'] = info['skipped']+1
-                    pass # skip for now, Idempotency handling
+                    info['skipped'] = info['skipped']+1 # skip for now, Idempotency handling
                 else:
                     Product.objects.create(**data)
     except Exception as e:

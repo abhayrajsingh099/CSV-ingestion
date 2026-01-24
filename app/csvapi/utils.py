@@ -109,11 +109,19 @@ def validate_row(row, csv_header) -> dict:
     return info
 
 
-def save_valid_rows_in_db(valid_data=dict) -> bool:
+def save_valid_rows_in_db(valid_data=dict) -> dict:
+    info = {'skipped':0, 'success':False}
+
     try:
         with transaction.atomic():
             for data in valid_data:
-                Product.objects.create(**data)
+                if Product.objects.filter(external_product_id=data['external_product_id']).exists():
+                    info['skipped'] = info['skipped']+1
+                    pass # skip for now, Idempotency handling
+                else:
+                    Product.objects.create(**data)
     except Exception as e:
-        return False
-    return True
+        return info
+    
+    info['success'] = True
+    return info

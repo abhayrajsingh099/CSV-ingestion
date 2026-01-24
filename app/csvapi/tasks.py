@@ -1,6 +1,6 @@
 from celery import shared_task ,  current_task
 import csv
-from datetime import datetime
+from django.utils import timezone
 
 from product.models import Product
 from .models import JobStatus
@@ -8,9 +8,8 @@ from .utils import (validate_csv_header_with_fields,
                     validate_row, save_valid_rows_in_db)
 
 @shared_task
-def csv_data(file_path):
+def csv_data(file_path): # celery -A core worker -l info --pool=solo
     task_id = current_task.request.id
-    print(task_id)
     job_instance = JobStatus.objects.get(celery_id=task_id)
     job_instance.status = 'R'
 
@@ -26,7 +25,7 @@ def csv_data(file_path):
         if not header_info['valid']:
             job_instance.status = 'F'
             job_instance.summary = header_info['errors']
-            job_instance.finished_at = datetime.now()
+            job_instance.finished_at = timezone.now()
             job_instance.save()
             return
 
@@ -50,24 +49,26 @@ def csv_data(file_path):
 
     #send valid data/rows to transicational.atomic function
     db_status = save_valid_rows_in_db(valid_rows_data)
-    if not db_status:
+    if not db_status['success']:
         job_instance.status = 'F'
         job_instance.summary = 'Unexcpeted Error during save. Try again.'
-        job_instance.finished_at = datetime.now()
+        job_instance.finished_at = timezone.now()
         job_instance.save()
         return
 
 
     #return valid response
-    context = {'Total rows':str(row_number-2),
-                   'Rows Accepted':str(valid_rows_count),
-                   'Rows Rejected':str(row_number-valid_rows_count-2),
+    context = {'Total rows':row_number-2,
+                   'Rows Accepted':valid_rows_count,
+                   'Rows Rejected':row_number-valid_rows_count-2,
+                   'Rows Created (New data)': valid_rows_count-db_status['skipped'],
+                   'Rows Skipped (Already existed data)': db_status['skipped'],
                    'row_errors':row_errors
                    }
 
     job_instance.status = 'C'
     job_instance.summary = context
-    job_instance.finished_at = datetime.now()
+    job_instance.finished_at = timezone.now()
     job_instance.save()
 
     return 'Success'

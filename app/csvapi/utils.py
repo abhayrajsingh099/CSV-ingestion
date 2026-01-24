@@ -109,6 +109,7 @@ def validate_row(row, csv_header) -> dict:
     return info
 
 
+# Transaction and Idempotency Implemented
 def save_valid_rows_in_db(valid_data=dict) -> dict:
     info = {'skipped':0, 'success':False}
 
@@ -122,6 +123,6 @@ def save_valid_rows_in_db(valid_data=dict) -> dict:
                     Product.objects.create(**data)
     except Exception as e:
         return info
-    
+
     info['success'] = True
     return info

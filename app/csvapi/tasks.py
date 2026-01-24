@@ -11,7 +11,13 @@ from .utils import (validate_csv_header_with_fields,
 def csv_data(file_path): # celery -A core worker -l info --pool=solo
     task_id = current_task.request.id
     job_instance = JobStatus.objects.get(celery_id=task_id)
-    job_instance.status = 'R'
+
+    # Making retry safe, if job in terminal state, reject retry
+    if job_instance.status in ['C', 'F']:
+        return f"No Need to Retry Task. Job status:{job_instance.status}"
+    else:
+        job_instance.status = 'R'
+        job_instance.save()
 
     #models fields
     model_fields = [field.name for field in Product._meta.fields if not field.name=='id']
@@ -50,9 +56,7 @@ def csv_data(file_path): # celery -A core worker -l info --pool=solo
     #send valid data/rows to transicational.atomic function
     db_status = save_valid_rows_in_db(valid_rows_data)
     if not db_status['success']:
-        job_instance.status = 'F'
-        job_instance.summary = 'Unexcpeted Error during save. Try again.'
-        job_instance.finished_at = timezone.now()
+        job_instance.summary = 'Unexcpeted Error during save. Trying again.'
         job_instance.save()
         return
 

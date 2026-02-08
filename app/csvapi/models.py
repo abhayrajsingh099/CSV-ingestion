@@ -12,11 +12,11 @@ STATUS_CHOICES = [
     ('C', 'Completed'),
 ]
 class JobStatus(models.Model):
-    celery_id = models.CharField(unique=True, editable=False, blank=False)
+    celery_id = models.CharField(max_length=255, unique=True, editable=False, blank=False)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='Q')
     started_at = models.DateTimeField(auto_now_add=True)
-    finished_at = models.DateTimeField(default=timezone.now())
-    summary = models.TextField()
+    finished_at = models.DateTimeField(null=True, blank=True)
+    summary = models.TextField(blank=True)
     retry_count = models.IntegerField(default=0)
 
     def __str__(self):

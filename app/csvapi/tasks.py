@@ -1,7 +1,7 @@
 from celery import shared_task , current_task
 import csv
-import random
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 from product.models import Product
 from .models import JobStatus
@@ -16,7 +16,11 @@ from .utils import (validate_csv_header_with_fields,
 )
 def csv_data(self, file_path): # celery -A core worker -l info --pool=solo
     task_id = current_task.request.id
-    job_instance = JobStatus.objects.get(celery_id=task_id)
+
+    try:
+        job_instance = get_object_or_404(JobStatus, celery_id=task_id)
+    except Exception as e:
+        raise Exception(e)
 
     # Celery Retry Logic
     if job_instance.status in ['C', 'F']: # No retry

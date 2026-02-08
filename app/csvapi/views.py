@@ -39,7 +39,7 @@ def upload_csv_file(request):
     return Response(context ,status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def check_job_status(request, id):
 
     job = get_object_or_404(JobStatus, celery_id=id)

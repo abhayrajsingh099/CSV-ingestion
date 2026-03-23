@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        for _ in range(0, 5):
+        while True:
             try:
                 connection.ensure_connection()
                 self.stdout.write(
@@ -19,11 +19,7 @@ class Command(BaseCommand):
                 )
                 return
             except OperationalError:
-                self.stdout.write(f"Waiting for Database....")
+                self.stdout.write(f"2 second, Waiting for Database....")
                 time.sleep(2)
-
-        self.stdout.write(
-                    self.style.WARNING(f"Database is not Available")
-                )
 
 

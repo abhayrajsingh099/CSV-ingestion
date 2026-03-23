@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'product',
     'csvapi',
     'rest_framework',
+    'cli',
 ]
 
 MIDDLEWARE = [

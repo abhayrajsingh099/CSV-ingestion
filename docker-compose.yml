@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   web:
-    image: csv-ingestion-django
+    build: .
     container_name: django_app
     ports:
       - "8000:8000"
@@ -17,7 +17,37 @@ services:
       MYSQL_HOST: db
       CELERY_BROKER_URL: redis://redis:6379/0
     volumes:
+      - .:/app
       - media_data:/app/media
+    command: >
+      sh -c "
+      python manage.py wait_for_db &&
+      python manage.py makemigrations &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+
+  celery:
+    build: .
+    container_name: celery_worker
+    depends_on:
+      - db
+      - redis
+    environment:
+      USE_MYSQL: "1"
+      MYSQL_DATABASE: django_db
+      MYSQL_USER: django_user
+      MYSQL_PASSWORD: django_pass
+      MYSQL_HOST: db
+      CELERY_BROKER_URL: redis://redis:6379/0
+    volumes:
+      - .:/app
+      - media_data:/app/media
+    command: >
+      sh -c "
+      python manage.py wait_for_db &&
+      celery -A core worker -l info
+      "
 
   db:
     image: mysql:8.0
@@ -33,23 +63,6 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
-
-  celery:
-    image: csv-ingestion-django
-    container_name: celery_worker
-    depends_on:
-      - redis
-      - db
-    command: celery -A core worker -l info
-    environment:
-      USE_MYSQL: "1"
-      MYSQL_DATABASE: django_db
-      MYSQL_USER: django_user
-      MYSQL_PASSWORD: django_pass
-      MYSQL_HOST: db
-      CELERY_BROKER_URL: redis://redis:6379/0
-    volumes:
-      - media_data:/app/media
 
 volumes:
   mysql_data:

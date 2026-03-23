@@ -1,11 +1,11 @@
 """
- Define Model for Product Attributes.
+ Define Model for Product
 """
 
 from django.db import models
 
 class Product(models.Model):
-    external_product_id = models.CharField(unique=True, blank=False, max_length=50) # only idempotency key
+    external_product_id = models.CharField(unique=True, blank=False, max_length=50)
     name = models.CharField(max_length=255, blank=False)
     category = models.CharField(max_length=255, blank=False)
     brand = models.CharField(max_length=255, blank=False)

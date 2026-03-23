@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 dump.rdb
 
+#ignore migrations db
+migrations/
+
 # C extensions
 *.so
 

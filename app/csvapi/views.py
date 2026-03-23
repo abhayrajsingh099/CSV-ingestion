@@ -23,11 +23,13 @@ def upload_csv_file(request):
     if not file['file_path']:
         return Response({'errors':file['errors']}, status=status.HTTP_400_BAD_REQUEST)
 
-    #job created
+    #job created,
+    #FIX:- no need for task_id instead when job is created send that id
     task_id = uuid.uuid4()
     try:
         JobStatus.objects.create(celery_id=task_id)
     except Exception as e:
+        raise e
         return Response({'errors':"Job creation failed. Try again"}, status=status.HTTP_400_BAD_REQUEST)
 
     #background job

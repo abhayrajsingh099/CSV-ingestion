@@ -11,6 +11,7 @@ STATUS_CHOICES = [
     ('F', 'Failed'),
     ('C', 'Completed'),
 ]
+
 class JobStatus(models.Model):
     celery_id = models.CharField(max_length=255, unique=True, editable=False, blank=False)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='Q')

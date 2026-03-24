@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-3z08g&=l2)6vvy&-uv%+$-6#tkhr@&*w4v$9q72y6#r0ilt+wk
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -136,3 +136,6 @@ STATIC_URL = 'static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True

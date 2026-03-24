@@ -29,7 +29,6 @@ def upload_csv_file(request):
     try:
         JobStatus.objects.create(celery_id=task_id)
     except Exception as e:
-        raise e
         return Response({'errors':"Job creation failed. Try again"}, status=status.HTTP_400_BAD_REQUEST)
 
     #background job

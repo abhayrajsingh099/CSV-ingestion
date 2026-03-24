@@ -12,7 +12,8 @@ from .utils import (validate_csv_header_with_fields,
         bind=True,
         autoretry_for=(Exception,),
         max_retries=3,
-        retry_backoff=True
+        retry_backoff=True,
+        acks_late=True
 )
 def csv_data(self, file_path): # celery -A core worker -l info --pool=solo
     task_id = current_task.request.id

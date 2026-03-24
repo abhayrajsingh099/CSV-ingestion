@@ -139,3 +139,6 @@ CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    'visibility_timeout': 60  # kept small for testing
+}

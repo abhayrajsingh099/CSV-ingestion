@@ -4,6 +4,8 @@ from django.core.files.storage import default_storage
 
 
 from django.db import transaction
+from django.db.utils import IntegrityError
+
 from product.models import Product
 
 
@@ -94,7 +96,7 @@ def validate_row(row, csv_header) -> dict:
             if not is_positive_number(col_data):
                 column_errors.append(f"Column:{col_number}:'{current_header}' Negative or Invalid Values not accepted.")
             else:
-                valid_row_data[current_header] = int(col_data)
+                valid_row_data[current_header] = int(float(col_data))
 
         else: # csv_header[csv_index] is description textfield
             valid_row_data[current_header] = col_data
@@ -117,10 +119,10 @@ def save_valid_rows_in_db(valid_data=dict) -> dict:
     try:
         with transaction.atomic():
             for data in valid_data:
-                if Product.objects.filter(external_product_id=data['external_product_id']).exists():
-                    info['skipped'] = info['skipped']+1 # skip for now, Idempotency handling
-                else:
+                try:
                     Product.objects.create(**data)
+                except IntegrityError:
+                    info['skipped'] += 1 # skip for now, Idempotency handling
     except Exception as e:
         return info
 

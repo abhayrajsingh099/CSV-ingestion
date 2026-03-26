@@ -9,13 +9,10 @@ services:
     depends_on:
       - db
       - redis
+    env_file:
+      - .env
     environment:
       USE_MYSQL: "1"
-      MYSQL_DATABASE: django_db
-      MYSQL_USER: django_user
-      MYSQL_PASSWORD: django_pass
-      MYSQL_HOST: db
-      CELERY_BROKER_URL: redis://redis:6379/0
     volumes:
       - .:/app
       - media_data:/app/media
@@ -33,13 +30,10 @@ services:
     depends_on:
       - db
       - redis
+    env_file:
+      - .env
     environment:
       USE_MYSQL: "1"
-      MYSQL_DATABASE: django_db
-      MYSQL_USER: django_user
-      MYSQL_PASSWORD: django_pass
-      MYSQL_HOST: db
-      CELERY_BROKER_URL: redis://redis:6379/0
     volumes:
       - .:/app
       - media_data:/app/media
@@ -53,10 +47,10 @@ services:
     image: mysql:8.0
     container_name: mysql_db
     environment:
-      MYSQL_DATABASE: django_db
-      MYSQL_USER: django_user
-      MYSQL_PASSWORD: django_pass
-      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
 

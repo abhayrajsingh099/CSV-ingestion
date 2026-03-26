@@ -112,19 +112,15 @@ def validate_row(row, csv_header) -> dict:
     return info
 
 
-# Transaction and Idempotency Implemented
+# Idempotency Implemented
 def save_valid_rows_in_db(valid_data=dict) -> dict:
     info = {'skipped':0, 'success':False}
 
-    try:
-        with transaction.atomic():
-            for data in valid_data:
-                try:
-                    Product.objects.create(**data)
-                except IntegrityError:
-                    info['skipped'] += 1 # skip for now, Idempotency handling
-    except Exception as e:
-        return info
+    for data in valid_data:
+        try:
+            Product.objects.create(**data)
+        except IntegrityError:
+                info['skipped'] += 1 # skip for now, Idempotency handling
 
     info['success'] = True
     return info

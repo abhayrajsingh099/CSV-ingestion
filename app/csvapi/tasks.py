@@ -2,6 +2,7 @@ from celery import shared_task , current_task
 import csv
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from django.core.files.storage import default_storage
 
 from product.models import Product
 from .models import JobStatus
@@ -45,7 +46,7 @@ def csv_data(self, file_path): # celery -A core worker -l info --pool=solo
     #models fields
     model_fields = [field.name for field in Product._meta.fields if not field.name=='id']
     # using csv module
-    with open(file_path, 'r') as file:
+    with default_storage.open(file_path, 'r') as file:
         csv_reader = csv.reader(file)
         csv_header = next(csv_reader)
 

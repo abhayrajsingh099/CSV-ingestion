@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'cli',
 ]
 
+INSTALLED_APPS += ['storages']
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -97,6 +99,13 @@ if os.getenv("USE_MYSQL") == "1":
         },
     }
 
+# Storage configurations
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage"
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -135,6 +144,8 @@ USE_TZ = True
 STATIC_URL = 'static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Celery configurations
+
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 
 CELERY_TASK_ACKS_LATE = True
@@ -142,3 +153,15 @@ CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     'visibility_timeout': 60  # kept small for testing
 }
+
+# AWS S3 Storage configurations
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
+
+AWS_S3_SIGNATURE_VERSION = "s3v4"
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None

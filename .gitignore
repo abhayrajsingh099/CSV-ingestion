@@ -4,8 +4,9 @@ __pycache__/
 *$py.class
 dump.rdb
 
-#ignore migrations db
-migrations/
+# ignore django staticfiles
+staticfiles
+test.py
 
 # C extensions
 *.so

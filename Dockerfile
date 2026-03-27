@@ -6,7 +6,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Workdir
-WORKDIR /app/app
+WORKDIR /app
+
 
 # System deps
 RUN apt-get update && apt-get install -y \
@@ -19,8 +20,14 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy FULL project (important fix)
-COPY . .
+RUN useradd -m appuser
+
+# Copy FULL project
+COPY . /app
+
+RUN chown -R appuser:appuser /app
+
+USER appuser
 
 # Expose port
 EXPOSE 8000

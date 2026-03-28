@@ -112,14 +112,28 @@ def validate_row(row, csv_header) -> dict:
 
 
 # Idempotency Implemented
-def save_valid_rows_in_db(valid_data=dict) -> dict:
-    info = {'skipped':0, 'success':False}
+def save_valid_rows_in_db(valid_data=list) -> dict:
+    BATCH_SIZE = 1000
+    info = {'success':False}
 
-    for data in valid_data:
-        try:
-            Product.objects.create(**data)
-        except IntegrityError:
-                info['skipped'] += 1 # skip for now, Idempotency handling
+    #introduced batch_loading objects_into_memeory then bulk_create why? limit in-memory object loading to 1K only
+    for i in range(0, len(valid_data), BATCH_SIZE):
+        batch = valid_data[i:i+BATCH_SIZE]
+
+        batch_product = [
+            Product(
+                external_product_id=item["external_product_id"],
+                name=item["name"],
+                category=item["category"],
+                brand=item["brand"],
+                price=item["price"],
+                stock=item["stock"],
+                description=item["description"]
+            )
+            for item in batch
+        ]
+
+        Product.objects.bulk_create(batch_product, ignore_conflicts=True)
 
     info['success'] = True
     return info

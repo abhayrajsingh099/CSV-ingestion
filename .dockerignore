@@ -19,3 +19,7 @@ node_modules/
 *.log
 media/
 *.csv
+
+venv
+app/.env
+.changesToDo

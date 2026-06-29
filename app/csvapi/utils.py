@@ -21,7 +21,7 @@ def validate_csv_file(csv_file) -> dict:
         return info
 
     filename = csv_file.name
-    file_time= time.strftime("%d-%s")
+    file_time = time.strftime("%Y%m%d_%H%M%S")
     file_path = f'{time.strftime("%Y-%m-%d")}/{filename}-{file_time}'
     relative_path = default_storage.save(f'csv_files/{file_path}', csv_file)
     info['file_path'] = relative_path

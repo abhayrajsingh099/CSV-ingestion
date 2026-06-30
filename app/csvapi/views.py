@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 
 from .tasks import csv_data
 from .models import JobStatus
-from .serializers import JobSerializer
+from .serializers import JobSerializer, DocumentSerializer
 from .utils import validate_csv_file
 from .models import Document
 
@@ -64,6 +64,21 @@ def check_job_status(request, id):
     serializer = JobSerializer(job)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def documents(request):
+    document_lists = Document.objects.filter(user=request.user)
+
+    serializer = DocumentSerializer(document_lists, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
+
 
 
 

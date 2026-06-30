@@ -1,12 +1,8 @@
-import axios from "axios";
+import api from "./api";
 
-const authApi = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-});
-
-export async function login(username, password) {
-    const response = await authApi.post('/token/', {
-        username,
+export async function login(email, password) {
+    const response = await api.post('/auth/login/', {
+        email,
         password,
     });
 

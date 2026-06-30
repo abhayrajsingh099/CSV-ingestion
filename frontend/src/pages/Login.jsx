@@ -3,22 +3,42 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useState } from "react"
 
+import { login } from "@/services/authService";
+import { getDocuments } from "@/services/documentService";
+
 function Login() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    async function handleLogin(e) {
+        e.preventDefault();
+
+        setError("");
+        setLoading(true);
+
+        try {
+            const data = await login(email, password);
+            localStorage.setItem("token", JSON.stringify(data))
+        } catch(e) {
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
+
+    }
+
     return (
-        <div >
+        <form onSubmit={handleLogin}>
             <Card>
                 <h1 color="green">CSV DASHBOARD</h1>
 
                 <Input
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter username .."
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter email .."
                 />
 
                 <Input
@@ -28,12 +48,19 @@ function Login() {
                     placeholder="Enter password .."
                 />
 
-                <Button onClick={"dd"}>
-                    Login
+                {
+                    <p>{error && true}</p>
+                }
+
+
+                <Button
+                    type="submit"
+                    disabled={loading}>
+                    {loading? "login..." : "Login"}
                 </Button>
 
             </Card>
-        </div>
+        </form>
 
     )
 }

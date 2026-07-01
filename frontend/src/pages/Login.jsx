@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react"
 
 import { login } from "@/services/authService";
-import { getDocuments } from "@/services/documentService";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -21,6 +22,7 @@ function Login() {
         try {
             const data = await login(email, password);
             localStorage.setItem("token", JSON.stringify(data))
+            navigate("/dashboard");
         } catch(e) {
             setError(e.message);
         } finally {

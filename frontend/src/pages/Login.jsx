@@ -32,37 +32,60 @@ function Login() {
     }
 
     return (
-        <form onSubmit={handleLogin}>
-            <Card>
-                <h1 color="green">CSV DASHBOARD</h1>
 
-                <Input
-                    type="text"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter email .."
-                />
+        <div className="flex min-h-screen items-center justify-center bg-muted/30">
+            <Card className="w-full max-w-md p-8">
+                <form onSubmit={handleLogin}>
+                    <Card>
+                        <div className="mb-6 text-center">
+                            <h1 className="text-3xl font-bold">
+                                CSV Dashboard
+                            </h1>
 
-                <Input
-                    type="text"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password .."
-                />
+                            <p className="text-muted-foreground mt-2">
+                                Sign in to manage your CSV documents.
+                            </p>
+                        </div>
 
-                {
-                    <p>{error && true}</p>
-                }
+                        <div className="space-y-4">
+
+                            <Input
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+
+                            <Input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />
+
+                        </div>
+                        {
+                            error && (
+                                <p className="mt-4 text-sm text-red-500">
+                                    {error}
+                                </p>
+                            )
+                        }
 
 
-                <Button
-                    type="submit"
-                    disabled={loading}>
-                    {loading? "login..." : "Login"}
-                </Button>
+                        <Button
+                            className="mt-6 w-full"
+                            type="submit"
+                            disabled={loading}
+                        >
+                            {loading ? "Signing in..." : "Sign In"}
+                        </Button>
 
+                    </Card>
+                </form>
             </Card>
-        </form>
+        </div>
+
 
     )
 }

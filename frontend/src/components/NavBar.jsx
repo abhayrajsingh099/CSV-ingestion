@@ -11,11 +11,22 @@ function Navbar() {
 
     return (
         <>
-            <h1>CSV DASHBOARD</h1>
+            <header className="border-b">
+                <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
 
-            <Button onClick={handleLogout}>
-                Logout
-            </Button>
+                    <h1 className="text-xl font-bold">
+                        CSV Dashboard
+                    </h1>
+
+                    <Button
+                        variant="outline"
+                        onClick={handleLogout}
+                    >
+                        Logout
+                    </Button>
+
+                </div>
+            </header>
         </>
     )
 }

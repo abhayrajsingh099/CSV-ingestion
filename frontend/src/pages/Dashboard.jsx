@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { getDocuments } from "@/services/documentService";
 import Navbar from "@/components/NavBar";
 import { Card } from "@/components/ui/card";
+import UploadCsv from "@/components/UploadCsv";
 
 
 function Dashboard() {
@@ -10,20 +11,23 @@ function Dashboard() {
     const [error, setError] = useState("");
     const [documents, setDocuments] = useState([]);
 
-    useEffect(() => {
-
-        async function fetchDocuments() {
-            try{
-                const data = await getDocuments();
-                setDocuments(data);
-            }
-            catch (e) {
-                setError(e.message);
-            }
-            finally{
-                setLoading(false)
-            }
+    async function fetchDocuments() {
+        setError("");
+        
+        try{
+            const data = await getDocuments();
+            setDocuments(data);
         }
+        catch (e) {
+            setError(e.message);
+        }
+        finally{
+            setLoading(false)
+        }
+    }
+
+
+    useEffect(() => {
 
         fetchDocuments();
 
@@ -47,6 +51,10 @@ function Dashboard() {
                 <p className="text-muted-foreground">
                     Manage your CSV documents.
                 </p>
+            </div>
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold">Upload Csv</h1>
+                <UploadCsv onUploadSuccess={fetchDocuments}/>
             </div>
             <h2 className="mb-4 text-xl font-semibold">
                 Your Documents

@@ -5,3 +5,14 @@ export async function getDocuments() {
 
     return response.data
 }
+
+export async function uploadDocument(file) {
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const response = await api.post("/csv/upload/", formData);
+
+    return response.data;
+}

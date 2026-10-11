@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
 
-from product.models import Product
+from app.product.models import Product
 from .models import JobStatus
 from .utils import (validate_csv_header_with_fields,
                     validate_row, save_valid_rows_in_db)

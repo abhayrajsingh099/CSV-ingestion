@@ -6,7 +6,7 @@ from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.utils import IntegrityError
 
-from product.models import Product
+from app.product.models import Product
 
 
 

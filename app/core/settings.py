@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'app.cli',
     'app.accounts',
     'rest_framework_simplejwt',
+    'drf_spectacular',
 ]
 
 INSTALLED_APPS += ['storages']
@@ -104,9 +105,17 @@ STORAGES = {
 }
 
 REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "CSV Ingestion API",
+    "DESCRIPTION": "API for uploading and processing CSV files.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA":False,
 }
 
 

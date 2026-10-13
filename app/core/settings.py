@@ -76,13 +76,6 @@ WSGI_APPLICATION = 'app.core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-if getenv("USE_MYSQL") == "1":
-    DATABASES["default"] = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": getenv("MYSQL_DATABASE"),
         "USER": getenv("MYSQL_USER"),
@@ -93,6 +86,7 @@ if getenv("USE_MYSQL") == "1":
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
+}
 
 # Storage configurations
 STORAGES = {

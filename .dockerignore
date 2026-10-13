@@ -5,6 +5,7 @@ __pycache__/
 
 .env
 .env.*
+.envs/.env.example
 
 .git
 .gitignore
@@ -20,6 +21,4 @@ node_modules/
 media/
 *.csv
 
-venv
-app/.env
-.changesToDo
+venv/
